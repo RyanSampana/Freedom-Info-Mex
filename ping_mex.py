@@ -23,6 +23,7 @@ def _connect_mongo(host, port, username, password, db):
     except pymongo.errors.ConnectionFailure, e:
         print "Could not connect to MongoDB: %s" % e 
 
+""" this inserts a folio """
 def insert_folio(db,collection,insert_query={},
                  host='localhost',port=27017,username=None, password=None,):
     # Connect to MongoDB
@@ -121,3 +122,39 @@ def file_extension(magicFile):
         return ".txt"
     else:
         return None
+
+def a_function(document,attachment_directory,afilename):
+    object_id = document['_id']
+    year = document['year']
+    url = document['ARCHIVORESPUESTA']
+    path_year = str(attachment_directory)+str(year)+'/'
+    path_to_download = str(attachment_directory)+str(year)+'/'+str(object_id) 
+    
+    try:
+        os.stat(path_to_download)
+    except:
+        os.mkdir(path_to_download)
+    
+    downloaded_file = download_file(url,afilename,path_to_download)
+    extension = what_is_file_extension(str(downloaded_file))
+    renamed_file = os.path.join(path_to_download,afilename+str(extension))
+    print renamed_file
+    print path_to_download
+    try:
+        os.rename(path_to_download+afilename,renamed_file)
+        print "successfuly renamed"
+    except:
+        print "unsuccessful rename"
+        return renamed_file
+    
+    return renamed_file
+        
+def build_request_from_folio(folio_document,path_to_file,mongo_request):
+    import datetime
+    request = {}
+    request['folio_id'] = folio_document['_id']
+    request['request_url'] = folio_document['ARCHIVORESPUESTA']
+    request['date'] = datetime.datetime.now()
+    request['path_to_file'] = str(path_to_file)
+    result_of_insert = mongo_request.insert_one(request)
+    return result_of_insert        
