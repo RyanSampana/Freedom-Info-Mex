@@ -118,6 +118,64 @@ def attach_to_text(df,path_to_attachments):
     
     return df
 
+def mongo_insert_folio(folio,follios_collection,path_to_attachments):
+    new_dict = {}
+    new_dict['FOLIO'] = folio['FOLIO']
+    try:
+        new_dict['FECHASOLICITUD'] = datetime.datetime.strptime(str(folio['FECHASOLICITUD']),'%Y-%m-%d %H:%M:%S')
+    except:
+        new_dict['FECHASOLICITUD'] = None
+    new_dict['TIPOSOLICITUD'] = folio['TIPOSOLICITUD']
+    new_dict['DEPENDENCIA'] = folio['DEPENDENCIA']
+    new_dict['ESTATUS'] = folio['MEDIOENTRADA']
+    new_dict['MEDIOENTRADA'] = folio['MEDIOENTRADA']
+    new_dict['DESCRIPCIONSOLICITUD'] = folio['DESCRIPCIONSOLICITUD']
+    new_dict['OTROSDATOS'] = folio['OTROSDATOS']
+    new_dict['ARCHIVOADJUNTOSOLICITUD'] = folio['ARCHIVOADJUNTOSOLICITUD']
+    new_dict['RESPUESTA'] = folio['RESPUESTA']
+    fecha_respuesta = str(folio['FECHARESPUESTA'])
+        # we try to insert as datetime object.
+    try:
+        new_dict['FECHARESPUESTA'] = datetime.datetime.strptime(str(folio['FECHARESPUESTA']),'%Y-%m-%d')
+    except:
+        # the gov hasn't responded yet thus there is no date
+        new_dict['FECHARESPUESTA'] = None
+    new_dict['SECTOR'] = folio['SECTOR']
+    new_dict['PDFOCR'] = folio['PDFOCR']
+    new_dict['ARCHIVORESPUESTA'] = folio['ARCHIVORESPUESTA']
+    new_dict['year'] = folio['year']
+    new_dict['LOCALIDAD'] = {'PAIS' : folio['PAIS'], 
+                             'ESTADO' : folio['ESTADO'], 
+                             'MUNICIPIO' : folio['MUNICIPIO'],
+                             'CODIGOPOSTAL' : folio['CODIGOPOSTAL']
+                            }
+    new_dict['path_to_file'] = folio['path_to_file']
+    
+    # we are now ready to insert to mongodb
+    insert_result = follios_collection.insert_one(new_dict)
+    
+    # get the object_id
+    object_id = str(insert_result.inserted_id)    
+    
+    # path_year folder
+    path_year = path_to_attachments+'/'+str(new_dict['year'])
+    try:
+        os.stat(path_year)
+    except:
+        os.mkdir(path_year)
+    # path_id folder    
+    path_id = path_year+'/'+str(object_id)
+    try:
+        os.stat(path_id)
+    except:
+        os.mkdir(path_id)    
+        
+    # update mongodb    
+    update_result = follios_collection.update_one({"_id": ObjectId(object_id)},
+                                           {"$set": {"path_to_file": str(path_id)} }
+                                          )
+    return update_result,insert_result
+
 """ This function takes a pandas dataframe and inserts it into local mongodb"""
 def mongod_insert_df(df,follios_collection):
     length_of_df = len(df)

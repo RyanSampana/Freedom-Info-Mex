@@ -4,6 +4,21 @@ import pandas as pd
 import requests
 from collections import defaultdict
 import magic
+from bson.objectid import ObjectId
+import datetime
+
+
+""" Build the initial request document to be placed in mongodb """
+def build_initial_request(folio,path_to_download,time_stamp,response_code,mongo_response):
+    new_dict = {}
+    
+    new_dict["Folio_id"] = ObjectId(str(folio['_id']))
+    new_dict["path_to_file"] = str(path_to_download)
+    new_dict["response"] = [{'time':time_stamp,'response_code':response_code}]
+    new_dict["Last_Modified"] = time_stamp
+    
+    insert = mongo_response.insert_one(new_dict)
+    return insert
 
 """ Given a folio, we determine if there exists a path to file. If there is a path to file,
 great out put that path. If there isn't, make that path and return it"""
