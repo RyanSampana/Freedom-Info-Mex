@@ -9,8 +9,9 @@ import datetime
 import time
 from time import sleep
 
-""" Build update """
+
 def build_update_request(response_dictionary,response_collection):
+    """ Build update """
     url = response_dictionary['url']
     dl_path = response_dictionary['path_to_file']
     dl_path,_ = os.path.split(dl_path)
@@ -29,8 +30,9 @@ def build_update_request(response_dictionary,response_collection):
                               '$set': {'Last_Modified': time_stamp}})
     return m_result
 
-""" Build the initial request document to be placed in mongodb """
+
 def build_initial_request(folio,mongo_response):
+    """ Build the initial request document to be placed in mongodb """
     url = folio['ARCHIVORESPUESTA']
     # build path to file
     path_to_file = validate_path(folio)
@@ -54,10 +56,11 @@ def build_initial_request(folio,mongo_response):
     
     return insert
 
-""" Given a folio, we determine if there exis
-a path to file. If there is a path to file,
-great out put that path. If there isn't, make that path and return it"""
+
 def validate_path(folio):
+    """ Given a folio, we determine if there exis
+    a path to file. If there is a path to file,
+    great out put that path. If there isn't, make that path and return it"""
         path_to_file = folio['path_to_file']
 
         if path_to_file == None:
@@ -86,8 +89,9 @@ def validate_path(folio):
             path_to_file = path_to_file+'/'
             return path_to_file
         
-"""Determine the file_extension of a magicFile and return the extesion"""
+
 def what_is_file_extension(magicFile):
+    """Determine the file_extension of a magicFile and return the extesion"""
     import re
     r = magic.from_file(magicFile)
     if re.search("Microsoft Word",r):
@@ -107,8 +111,10 @@ def what_is_file_extension(magicFile):
     else:
         return ""
     
-""" Given a url and path to the attachments folder, we download the file and return the response_code,path to the downloaded file, time_stamp of the download."""
-def download_file(url,path_to_attachments):
+
+def download_file(url,path_to_attachments, sleep_delay=0.05):
+    """ Given a url and path to the attachments folder, we download the file and return the response_code,path 
+    to the downloaded file, time_stamp of the download."""
     a_request = requests.get(url, verify = False)
     response_code = a_request.status_code
     if response_code == 200:
@@ -135,5 +141,5 @@ def download_file(url,path_to_attachments):
         time_stamp = datetime.datetime.now()
         path_to_download = None
         filename = None
-    sleep(0.05)
+    sleep(sleep_delay)
     return response_code,path_to_download,time_stamp,filename
