@@ -3,8 +3,8 @@ import warnings
 warnings.filterwarnings('ignore')
 import pymongo
 import pandas as pd
+
 # initialize path directories
-raw_data_directory = '/home/rsampana/raw_data/'
 path_to_attachments = '/mex-data'
 
 def connect_mongo():

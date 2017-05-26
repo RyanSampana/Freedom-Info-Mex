@@ -15,7 +15,7 @@ def validate_date(filename):
             z = y = pd.to_datetime(df['FECHARESPUESTA'].iloc[x],infer_datetime_format=True)
             z = z.to_datetime().strftime('%Y-%m-%d')
         except:
-            xs.append((filename,x))
+            errors.append((filename,x))
             print "Error with date for file {} at index {}".format(filename,x)
     return errors
 errors = []
